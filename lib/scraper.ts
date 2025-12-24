@@ -39,7 +39,7 @@ export interface VideoDetail {
 export const fetchHtml = async (url: string) => {
     try {
         console.log(`[Scraper] Fetching: ${url}`);
-        const res = await fetch(url, { headers: HEADERS, next: { revalidate: 0 } }); // Disable cache for debugging
+        const res = await fetch(url, { headers: HEADERS, next: { revalidate: 3600 } }); // Cache for 1 hour
         if (!res.ok) {
             console.error(`[Scraper] Fetch failed: ${res.status} ${res.statusText}`);
             throw new Error("Failed to fetch");

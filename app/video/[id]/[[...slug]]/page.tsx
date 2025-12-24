@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
+import VideoPlayer from "@/components/VideoPlayer";
 // import { getVideoDetail } from "@/lib/scraper"; // Removed duplicate
 // import { base64UrlDecode } from "@/lib/utils";
 import { notFound } from "next/navigation";
@@ -54,15 +55,7 @@ export default async function VideoPage({ params }: Props) {
                 <div className="mb-10">
                     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black shadow-2xl border border-white/10">
                         {video.mp4 ? (
-                            <video
-                                controls
-                                autoPlay
-                                className="h-full w-full"
-                                poster={video.thumbnail}
-                                src={video.mp4}
-                            >
-                                Your browser does not support the video tag.
-                            </video>
+                            <VideoPlayer key={video.mp4} src={video.mp4} poster={video.thumbnail} />
                         ) : (
                             <div className="flex h-full items-center justify-center text-red-500">
                                 Video source unavailable or blocked.
