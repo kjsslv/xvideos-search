@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 
 export default function VideoCard({ video }: { video: Video }) {
     return (
-        <Link href={video.url} className="group relative block overflow-hidden rounded-xl bg-zinc-900 shadow-lg transition-transform hover:-translate-y-1 hover:shadow-red-500/20">
+        <Link href={video.url} prefetch={false} className="group relative block overflow-hidden rounded-xl bg-zinc-900 shadow-lg transition-transform hover:-translate-y-1 hover:shadow-red-500/20">
             <div className="relative aspect-video w-full overflow-hidden">
                 <img
                     src={video.thumbnail}

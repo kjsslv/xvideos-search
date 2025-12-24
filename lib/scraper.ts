@@ -98,7 +98,9 @@ export const searchVideos = async (query: string, page = 0): Promise<Video[]> =>
     return videos;
 };
 
-export const getVideoDetail = async (id: string): Promise<VideoDetail | null> => {
+import { cache } from 'react';
+
+export const getVideoDetail = cache(async (id: string): Promise<VideoDetail | null> => {
     // PHP: https://www.xvideos.com/video.EID/a
     // ID passed here is expected to be the EID (alphanumeric)
     const url = `https://www.xvideos.com/video.${id}/a`;
@@ -188,4 +190,4 @@ export const getVideoDetail = async (id: string): Promise<VideoDetail | null> =>
         views,
         tags
     };
-}
+});
