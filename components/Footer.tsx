@@ -12,12 +12,12 @@ export default function Footer() {
                 {/* Copyright Section */}
                 <div className="flex flex-col md:flex-row items-center justify-between border-t border-white/5 pt-8">
                     <p className="text-sm text-gray-400">
-                        © {new Date().getFullYear()} <span className="font-bold text-white">PhimSex.NET</span>. All rights reserved.
+                        © {new Date().getFullYear()} <span className="font-bold text-white">Pornse.org</span>. All rights reserved.
                     </p>
                     <div className="flex gap-4 mt-4 md:mt-0">
-                        <Link href="/" className="text-sm text-gray-500 hover:text-white">Trang chủ</Link>
-                        <Link href="#" className="text-sm text-gray-500 hover:text-white">Điều khoản</Link>
-                        <Link href="#" className="text-sm text-gray-500 hover:text-white">Liên hệ</Link>
+                        <Link href="/" className="text-sm text-gray-500 hover:text-white">Home</Link>
+                        <Link href="#" className="text-sm text-gray-500 hover:text-white">Terms</Link>
+                        <Link href="#" className="text-sm text-gray-500 hover:text-white">Contact</Link>
                     </div>
                 </div>
             </div>

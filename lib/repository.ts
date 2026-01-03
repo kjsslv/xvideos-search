@@ -1,7 +1,23 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { createHash } from 'crypto';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
+
+/**
+ * Generates a sharded file path based on the key's MD5 hash.
+ * Strategy: data/ab/cd/friendly-name.json
+ */
+function getShardPath(key: string): string {
+    const hash = createHash('md5').update(key).digest('hex');
+    const level1 = hash.substring(0, 2);
+    const level2 = hash.substring(2, 4);
+
+    // Replace slashes with dashes to keep the file flat within the shard
+    const safeFilename = key.replace(/[\/\\]/g, '-');
+
+    return path.join(DATA_DIR, level1, level2, `${safeFilename}.json`);
+}
 
 /**
  * Retrieves data from a local JSON file if it exists, otherwise executes the fetcher
@@ -15,7 +31,7 @@ export async function getOrSet<T>(
     key: string,
     fetcher: () => Promise<T>
 ): Promise<T> {
-    const filePath = path.join(DATA_DIR, `${key}.json`);
+    const filePath = getShardPath(key);
 
     try {
         // Ensure directory exists
@@ -30,7 +46,6 @@ export async function getOrSet<T>(
             const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
             if (ageMs > sevenDaysMs) {
-                console.log(`[Repository] Cache EXPIRED: ${key} (Age: ${ageMs / 1000}s)`);
                 // Proceed to fetch logic below by throwing
                 throw new Error("Cache expired");
             }
@@ -41,26 +56,22 @@ export async function getOrSet<T>(
             if (!fileContent.trim()) throw new Error("Empty file");
 
             const data = JSON.parse(fileContent);
-            console.log(`[Repository] Cache HIT: ${key}`);
             return data;
         } catch (readError) {
             // File doesn't exist, is empty, invalid JSON, or EXPIRED
             // Proceed to fetch
         }
 
-        console.log(`[Repository] Cache MISS: ${key} - Fetching...`);
         const data = await fetcher();
 
         // Only save if data is not null/undefined
         if (data !== null && data !== undefined) {
             await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-            console.log(`[Repository] Saved to: ${filePath}`);
         }
 
         return data;
 
     } catch (error) {
-        console.error(`[Repository] Error in getOrSet for ${key}:`, error);
         // Fallback: try to fetch without saving if file system fails, or rethrow
         return await fetcher();
     }

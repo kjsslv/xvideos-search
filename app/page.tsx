@@ -7,10 +7,10 @@ import type { Metadata } from "next";
 export const revalidate = 3600; // ISR
 
 export const metadata: Metadata = {
-  title: "PhimSex.boo - Free Porn Videos, HD Sex Movies & XXX Clips",
-  description: "PhimSex.boo is the best place to watch free porn videos and HD sex movies. Discover our huge collection of xxx clips and full-length porn movies.",
+  title: "Pornse.org - Free Porn Videos, HD Sex Movies & XXX Clips",
+  description: "Pornse.org is the best place to watch free porn videos and HD sex movies. Discover our huge collection of xxx clips and full-length porn movies.",
   alternates: {
-    canonical: 'https://phimsex.boo',
+    canonical: 'https://pornse.org',
   }
 };
 
@@ -23,8 +23,8 @@ export default async function Home() {
       <div className="mx-auto max-w-screen-xl px-4 py-12">
         <div className="mb-8 flex items-end justify-between border-b border-white/10 pb-4">
           <div>
-            <h2 className="text-2xl font-bold text-white">Video Đề Xuất Hôm Nay</h2>
-            <p className="text-sm text-gray-400 mt-1">Danh sách video được tuyển chọn tự động</p>
+            <h2 className="text-2xl font-bold text-white">Recommended Videos Today</h2>
+            <p className="text-sm text-gray-400 mt-1">Automatically curated video list</p>
           </div>
         </div>
 

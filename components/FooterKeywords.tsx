@@ -18,7 +18,7 @@ export default async function FooterKeywords() {
 
     return (
         <div className="mb-8">
-            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Từ Khóa Phổ Biến</h3>
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Popular Keywords</h3>
             <div className="flex flex-wrap gap-2">
                 {keywords.map((kw, idx) => {
                     const cleanKw = kw.text;

@@ -31,6 +31,8 @@ export default async function SearchPage({
     // So slug will be "tu-khoa.html"
     const rawSlug = decodeURIComponent(slug);
     const query = rawSlug.replace('.html', '').replace(/-/g, ' ');
+    // Capitalize each word for the title
+    const capitalizedQuery = query.replace(/\b\w/g, c => c.toUpperCase());
 
     const videos = await searchVideos(query);
 
@@ -40,7 +42,7 @@ export default async function SearchPage({
             <div className="mx-auto max-w-screen-xl px-4 py-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 border-b border-white/10 pb-4">
                     <h1 className="text-2xl md:text-3xl font-bold">
-                        Results for: <span className="text-red-500 italic">"{query}"</span>
+                        Watch Free {capitalizedQuery} Porn Video
                     </h1>
                     <span className="text-gray-400 mt-2 md:mt-0 text-sm">
                         Found {videos.length} videos

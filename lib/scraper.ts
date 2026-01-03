@@ -46,14 +46,14 @@ export interface VideoDetail {
 
 export const fetchHtml = async (url: string) => {
     try {
-        console.log(`[Scraper] Fetching: ${url}`);
+
         const res = await fetch(url, { headers: HEADERS, next: { revalidate: 3600 } });
         if (!res.ok) {
             console.error(`[Scraper] Fetch failed: ${res.status} ${res.statusText}`);
             throw new Error("Failed to fetch");
         }
         const text = await res.text();
-        console.log(`[Scraper] Fetched ${text.length} bytes`);
+
         return text;
     } catch (e) {
         console.error("Fetch Error:", e);
@@ -64,10 +64,19 @@ export const fetchHtml = async (url: string) => {
 // Internal function to scrape search results/home
 const _scrapeSearchVideos = async (query: string, page = 0): Promise<Video[]> => {
     // Xvideos: https://www.xvideos.com/?k=QUERY&p=PAGE
-    const searchQuery = query || 'Jav HD';
-    // Use + for spaces, keep other characters (including non-English) as is
-    const formattedQuery = searchQuery.trim().replace(/\s+/g, '+');
-    const url = `https://www.xvideos.com/?k=${formattedQuery}&quality=hd&p=${page}`;
+    // Xvideos: https://www.xvideos.com/?k=QUERY&p=PAGE
+    let url = "";
+
+    if (!query || query === 'home') {
+        // Homepage: Best video
+        url = `https://www.xvideos.com/?k=teen&sort=views&quality=1080P&p=${page}`;
+    } else {
+        // Search
+        const searchQuery = query.trim();
+        // Use + for spaces, keep other characters (including non-English) as is
+        const formattedQuery = searchQuery.replace(/\s+/g, '+');
+        url = `https://www.xvideos.com/?k=${formattedQuery}&quality=hd&p=${page}`;
+    }
 
     const html = await fetchHtml(url);
     const $ = cheerio.load(html);
@@ -147,18 +156,26 @@ const _scrapeVideoDetail = async (id: string): Promise<VideoDetail | null> => {
     if (relatedRaw) {
         try {
             const parsed = JSON.parse(relatedRaw);
-            related = parsed.map((item: any) => {
+            interface RelatedVideoRaw {
+                eid?: string | number;
+                tf?: string;
+                i: string;
+                d: string;
+                r: string;
+            }
+            related = parsed.map((item: RelatedVideoRaw) => {
                 const itemTitle = decode(item.tf?.toString() || "");
                 const itemSlug = slugify(itemTitle).slice(0, 30).replace(/-+$/, '');
                 return {
-                    id: item.eid?.toString(),
+                    id: item.eid?.toString() || "",
                     title: itemTitle,
                     thumbnail: item.i.replace('/thumbs169/', '/thumbs169lll/'),
                     duration: decode(item.d),
                     rating: item.r,
-                    url: `/video/${base64UrlEncode(item.eid)}/${itemSlug}`
+                    url: `/video/${base64UrlEncode(item.eid?.toString() || "")}/${itemSlug}`
                 };
             });
+
 
             related.sort((a, b) => {
                 const rA = parseInt(a.rating?.replace('%', '') || "0");

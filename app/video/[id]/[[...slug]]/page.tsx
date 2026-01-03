@@ -14,12 +14,15 @@ export async function generateMetadata({ params }: Props) {
     const decodedId = base64UrlDecode(id);
     const video = await getVideoDetail(decodedId);
     if (!video) return { title: "Video Not Found" };
+    const firstTag = video.tags && video.tags.length > 0 ? video.tags[0] : null;
+    const displayTitle = firstTag ? `${firstTag}: ${video.title}` : video.title;
+
     return {
-        title: `${video.title} - Free Porn Video on PhimSex.boo`,
-        description: `Watch ${video.title} - free porn video on PhimSex.boo. Discover more xxx movies and hd sex clips related to this video.`,
+        title: `${displayTitle} - Free Porn Video on Pornse.org`,
+        description: `Watch ${video.title} - free porn video on Pornse.org. Discover more xxx movies and hd sex clips related to this video.`,
         openGraph: {
             title: `${video.title} - Free Porn Video`,
-            description: `Watch ${video.title} on PhimSex.boo`,
+            description: `Watch ${video.title} on Pornse.org`,
             images: [video.thumbnail],
             type: 'video.movie',
         }
@@ -42,6 +45,11 @@ export default async function VideoPage({ params }: Props) {
         redirect(`/video/${id}/${expectedSlug}`);
     }
 
+    // Display Logic
+    const firstTag = video.tags && video.tags.length > 0 ? video.tags[0] : null;
+    const displayTitle = firstTag ? `${firstTag}: ${video.title}` : video.title;
+    const displayTags = video.tags && video.tags.length > 0 ? video.tags.filter(t => t !== firstTag) : [];
+
     return (
         <main className="min-h-screen bg-[#0a0a0a] text-gray-100 font-sans">
             <Navbar />
@@ -53,7 +61,7 @@ export default async function VideoPage({ params }: Props) {
                         <VideoIframeWrapper videoId={id} thumbnail={video.thumbnail} />
                     </div>
 
-                    <h1 className="mt-4 text-2xl lg:text-3xl font-bold text-white">{video.title}</h1>
+                    <h1 className="mt-4 text-2xl lg:text-3xl font-bold text-white">{displayTitle}</h1>
                     <div className="flex items-center gap-6 mt-3 text-sm text-gray-400">
                         <span className="flex items-center gap-2">
                             <span className="font-semibold text-white">Views:</span> {video.views || "N/A"}
@@ -64,17 +72,30 @@ export default async function VideoPage({ params }: Props) {
                     </div>
 
                     {/* Tags */}
-                    {video.tags && video.tags.length > 0 && (
+                    {displayTags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-4">
-                            {video.tags.map((tag, idx) => (
-                                <a
-                                    key={idx}
-                                    href={`/s/${slugifySearchQuery(tag)}.html`}
-                                    className="px-3 py-1 bg-zinc-800 hover:bg-red-600 rounded-full text-xs text-gray-300 hover:text-white transition-colors"
-                                >
-                                    #{tag}
-                                </a>
-                            ))}
+                            {displayTags.map((tag, idx) => {
+                                const isMultiWord = tag.trim().includes(' ') || tag.trim().includes('-');
+                                if (isMultiWord) {
+                                    return (
+                                        <a
+                                            key={idx}
+                                            href={`/s/${slugifySearchQuery(tag)}.html`}
+                                            className="px-3 py-1 bg-zinc-800 hover:bg-red-600 rounded-full text-xs text-gray-300 hover:text-white transition-colors"
+                                        >
+                                            #{tag}
+                                        </a>
+                                    );
+                                }
+                                return (
+                                    <span
+                                        key={idx}
+                                        className="px-3 py-1 bg-zinc-800/50 rounded-full text-xs text-gray-400 cursor-default"
+                                    >
+                                        #{tag}
+                                    </span>
+                                );
+                            })}
                         </div>
                     )}
                 </div>

@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 
 // Singleton pattern for Next.js HMR
 const singletonKey = Symbol.for('sqlite_db');
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const globalObj = globalThis as unknown as { [singletonKey]: any };
 
 // Assuming keywords.db is in the root directory
@@ -9,7 +10,7 @@ const globalObj = globalThis as unknown as { [singletonKey]: any };
 const db = globalObj[singletonKey] || new Database('keywords.db');
 
 if (process.env.NODE_ENV !== 'production') {
-    globalObj[singletonKey] = db;
+  globalObj[singletonKey] = db;
 }
 
 // Enable WAL mode for better performance

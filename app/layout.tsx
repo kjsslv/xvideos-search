@@ -15,14 +15,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "PhimSex.boo - Free Porn Videos & HD Sex Movies",
-    template: "%s | PhimSex.boo"
+    default: "Pornse.org - Free Porn Videos & HD Sex Movies",
+    template: "%s | Pornse.org"
   },
-  description: "Watch millions of free porn videos and HD sex movies on PhimSex.boo. Update daily with the hottest porn video content from around the world.",
+  description: "Watch millions of free porn videos and HD sex movies on Pornse.org. Update daily with the hottest porn video content from around the world.",
   keywords: ["porn video", "free porn videos", "sex movies", "hd porn", "online porn"],
   openGraph: {
-    title: "PhimSex.boo - Free Porn Videos & HD Sex Movies",
-    description: "Watch millions of free porn videos and HD sex movies on PhimSex.boo.",
+    title: "Pornse.org - Free Porn Videos & HD Sex Movies",
+    description: "Watch millions of free porn videos and HD sex movies on Pornse.org.",
     type: "website",
   }
 };

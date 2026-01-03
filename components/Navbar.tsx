@@ -26,7 +26,7 @@ export default function Navbar() {
                 <Link href="/" className="flex items-center gap-2 group">
                     <div className="flex h-8 w-8 items-center justify-center rounded bg-red-600 font-bold text-white group-hover:bg-red-700 transition-colors">P</div>
                     <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent group-hover:to-white transition-all">
-                        PHIMSEX<span className="text-red-500">.BOO</span>
+                        PORNSE<span className="text-red-500">.ORG</span>
                     </span>
                 </Link>
 
@@ -34,7 +34,7 @@ export default function Navbar() {
                 <form onSubmit={handleSearch} className="hidden md:flex relative w-1/3 max-w-md">
                     <input
                         type="text"
-                        placeholder="Tìm video... (ví dụ: gái xinh, học sinh)"
+                        placeholder="Search videos... (e.g. teen, asian)"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         className="w-full rounded-full bg-zinc-900 border border-zinc-800 px-5 py-2.5 text-sm text-gray-200 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500 transition-all font-medium"
@@ -61,7 +61,7 @@ export default function Navbar() {
                     <form onSubmit={handleSearch} className="relative">
                         <input
                             type="text"
-                            placeholder="Tìm kiếm video..."
+                            placeholder="Search videos..."
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             autoFocus
