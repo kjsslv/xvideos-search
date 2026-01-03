@@ -1,13 +1,9 @@
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
-import VideoPlayer from "@/components/VideoPlayer";
-// import { getVideoDetail } from "@/lib/scraper"; // Removed duplicate
-// import { base64UrlDecode } from "@/lib/utils";
-import { notFound } from "next/navigation";
-
-import { redirect } from "next/navigation";
+import VideoIframeWrapper from "@/components/VideoIframeWrapper";
+import { notFound, redirect } from "next/navigation";
 import { getVideoDetail } from "@/lib/scraper";
-import { slugify } from "@/lib/utils";
+import { slugify, slugifySearchQuery, base64UrlDecode } from "@/lib/utils";
 
 interface Props {
     params: Promise<{ id: string, slug?: string[] }>;
@@ -15,7 +11,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
     const { id } = await params;
-    const decodedId = id; // base64UrlDecode(id);
+    const decodedId = base64UrlDecode(id);
     const video = await getVideoDetail(decodedId);
     if (!video) return { title: "Video Not Found" };
     return {
@@ -32,7 +28,7 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function VideoPage({ params }: Props) {
     const { id, slug } = await params;
-    const decodedId = id; // base64UrlDecode(id);
+    const decodedId = base64UrlDecode(id);
     const video = await getVideoDetail(decodedId);
 
     if (!video) return notFound();
@@ -54,13 +50,7 @@ export default async function VideoPage({ params }: Props) {
                 {/* Video Player Section - Full Width */}
                 <div className="mb-10">
                     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black shadow-2xl border border-white/10">
-                        {video.mp4 ? (
-                            <VideoPlayer key={video.mp4} src={video.mp4} poster={video.thumbnail} />
-                        ) : (
-                            <div className="flex h-full items-center justify-center text-red-500">
-                                Video source unavailable or blocked.
-                            </div>
-                        )}
+                        <VideoIframeWrapper videoId={id} thumbnail={video.thumbnail} />
                     </div>
 
                     <h1 className="mt-4 text-2xl lg:text-3xl font-bold text-white">{video.title}</h1>
@@ -79,7 +69,7 @@ export default async function VideoPage({ params }: Props) {
                             {video.tags.map((tag, idx) => (
                                 <a
                                     key={idx}
-                                    href={`/s/${tag.toLowerCase().replace(/\s+/g, '-').replace(/^-+|-+$/g, '')}`}
+                                    href={`/s/${slugifySearchQuery(tag)}.html`}
                                     className="px-3 py-1 bg-zinc-800 hover:bg-red-600 rounded-full text-xs text-gray-300 hover:text-white transition-colors"
                                 >
                                     #{tag}

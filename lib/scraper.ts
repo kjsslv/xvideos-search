@@ -1,13 +1,13 @@
 import * as cheerio from 'cheerio';
-import { slugify } from './utils';
-// getString import removed as it is not exported from utils
+import { decode } from 'html-entities';
+import { slugify, base64UrlEncode } from './utils';
+import { getOrSet } from './repository';
+import { cache } from 'react';
 
-// Wait, I didn't export getString from utils, I'll add it there or just inline it since it's specific.
-// Let's rely on standard parsing where possible, but use the "substring" method for JS vars.
-
+// Headers for scraping
 const HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9'
+    'Accept-Language': ''
 };
 
 const extractString = (str: string, start: string, end: string): string | null => {
@@ -16,13 +16,21 @@ const extractString = (str: string, start: string, end: string): string | null =
     return parts[1].split(end)[0];
 };
 
+const safeDecodeURIComponent = (str: string) => {
+    try {
+        return decodeURIComponent(str);
+    } catch (e) {
+        return str;
+    }
+}
+
 export interface Video {
     id: string;
     title: string;
     thumbnail: string;
     duration?: string;
-    url: string; // The relative URL or ID to use
-    rating?: string; // string "100%", "95%", etc, or extracted raw "r"
+    url: string;
+    rating?: string;
 }
 
 export interface VideoDetail {
@@ -39,7 +47,7 @@ export interface VideoDetail {
 export const fetchHtml = async (url: string) => {
     try {
         console.log(`[Scraper] Fetching: ${url}`);
-        const res = await fetch(url, { headers: HEADERS, next: { revalidate: 3600 } }); // Cache for 1 hour
+        const res = await fetch(url, { headers: HEADERS, next: { revalidate: 3600 } });
         if (!res.ok) {
             console.error(`[Scraper] Fetch failed: ${res.status} ${res.statusText}`);
             throw new Error("Failed to fetch");
@@ -53,10 +61,13 @@ export const fetchHtml = async (url: string) => {
     }
 }
 
-export const searchVideos = async (query: string, page = 0): Promise<Video[]> => {
+// Internal function to scrape search results/home
+const _scrapeSearchVideos = async (query: string, page = 0): Promise<Video[]> => {
     // Xvideos: https://www.xvideos.com/?k=QUERY&p=PAGE
     const searchQuery = query || 'Jav HD';
-    const url = `https://www.xvideos.com/?k=${encodeURIComponent(searchQuery)}&quality=hd&p=${page}`;
+    // Use + for spaces, keep other characters (including non-English) as is
+    const formattedQuery = searchQuery.trim().replace(/\s+/g, '+');
+    const url = `https://www.xvideos.com/?k=${formattedQuery}&quality=hd&p=${page}`;
 
     const html = await fetchHtml(url);
     const $ = cheerio.load(html);
@@ -69,6 +80,7 @@ export const searchVideos = async (query: string, page = 0): Promise<Video[]> =>
         // Title parsing
         let title = el.find('p.title a').attr('title');
         if (!title) title = el.find('p.title a').text();
+        title = decode(title);
 
         // Thumb parsing
         let thumb = el.find('.thumb img').attr('data-src') || el.find('.thumb img').attr('src') || "";
@@ -79,18 +91,17 @@ export const searchVideos = async (query: string, page = 0): Promise<Video[]> =>
         }
 
         // Duration
-        const duration = el.find('.duration').first().text().trim() || "";
+        const duration = decode(el.find('.duration').first().text().trim() || "");
 
         if (dataId) {
             const cleanTitle = (title || "").trim();
-            // Slice to 30 chars for video slugs to keep URLs short, similar to original logic
             const slug = slugify(cleanTitle).slice(0, 30).replace(/-+$/, '');
             videos.push({
                 id: dataId,
                 title: cleanTitle,
                 thumbnail: thumb.replace('/thumbs169/', '/thumbs169lll/'),
                 duration,
-                url: `/video/${dataId}/${slug}`
+                url: `/video/${base64UrlEncode(dataId)}/${slug}`
             });
         }
     });
@@ -98,80 +109,63 @@ export const searchVideos = async (query: string, page = 0): Promise<Video[]> =>
     return videos;
 };
 
-import { cache } from 'react';
-
-export const getVideoDetail = cache(async (id: string): Promise<VideoDetail | null> => {
-    // PHP: https://www.xvideos.com/video.EID/a
-    // ID passed here is expected to be the EID (alphanumeric)
+// Internal function to scrape video details
+const _scrapeVideoDetail = async (id: string): Promise<VideoDetail | null> => {
     const url = `https://www.xvideos.com/video.${id}/a`;
     const html = await fetchHtml(url);
     if (!html) return null;
 
-    // Direct string extraction for JS variables (Cheerio is bad at scripting parts)
     const mp4Hls = extractString(html, "html5player.setVideoHLS('", "');")?.replace(/[\n\r\s]/g, '');
     const mp4High = extractString(html, "html5player.setVideoUrlHigh('", "');")?.replace(/[\n\r\s]/g, '');
     const mp4Low = extractString(html, "html5player.setVideoUrlLow('", "');")?.replace(/[\n\r\s]/g, '');
 
     const mp4 = mp4Hls || mp4High || mp4Low || "";
 
-    // Title
-    const title = decodeURIComponent(extractString(html, "html5player.setVideoTitle('", "');") || "");
+    const title = decode(safeDecodeURIComponent(extractString(html, "html5player.setVideoTitle('", "');") || ""));
     const thumb = extractString(html, "html5player.setThumbSlide('", "');") || "";
 
     const $ = cheerio.load(html);
 
-    // Tags
     const tags: string[] = [];
     $('.video-tags-list li a').each((_, el) => {
         const $el = $(el);
         $el.find('.count').remove();
         const tag = $el.text().trim();
         if (tag && tag !== '+' && !tag.includes('Edit tags')) {
-            tags.push(tag);
+            tags.push(decode(tag));
         }
     });
 
-    // Duration
-    const duration = $('.duration').first().text().trim();
+    const duration = decode($('.duration').first().text().trim());
 
-    // Views
-    // Try multiple selectors
     let views = $('#nb-views').text().trim();
     if (!views) views = $('.mobile-hide #nb-views').text().trim();
     if (!views) views = $('.nb-views').text().trim();
 
-    // Related
     const relatedRaw = extractString(html, 'var video_related=', ';window.wpn_categories');
     let related: Video[] = [];
     if (relatedRaw) {
         try {
             const parsed = JSON.parse(relatedRaw);
-            // Expected format from XVideos related JSON
-            // [{id, u, i, tf, ...}]
-            // u = url, i = image, tf = title, d = duration?, r = rating (e.g. "100%")
             related = parsed.map((item: any) => {
-                const itemTitle = item.tf?.toString() || "";
+                const itemTitle = decode(item.tf?.toString() || "");
                 const itemSlug = slugify(itemTitle).slice(0, 30).replace(/-+$/, '');
                 return {
                     id: item.eid?.toString(),
                     title: itemTitle,
                     thumbnail: item.i.replace('/thumbs169/', '/thumbs169lll/'),
-                    duration: item.d,
-                    rating: item.r, // Extract rating "r"
-                    url: `/video/${item.eid}/${itemSlug}`
+                    duration: decode(item.d),
+                    rating: item.r,
+                    url: `/video/${base64UrlEncode(item.eid)}/${itemSlug}`
                 };
             });
 
-            // Sort by rating desc
-            // Rating "r" is usually like "95%" or "100%". We need to parse int
             related.sort((a, b) => {
                 const rA = parseInt(a.rating?.replace('%', '') || "0");
                 const rB = parseInt(b.rating?.replace('%', '') || "0");
                 return rB - rA;
             });
 
-            // Limit to 40 items (restoring full list) but keep payload minimal
-            // Remove 'rating' as it is not used in UI
             related = related.slice(0, 40).map(v => {
                 const { rating, ...rest } = v;
                 return rest as Video;
@@ -190,4 +184,18 @@ export const getVideoDetail = cache(async (id: string): Promise<VideoDetail | nu
         views,
         tags
     };
+};
+
+// Exported wrappers with JSON caching
+export const searchVideos = cache(async (query: string, page = 0): Promise<Video[]> => {
+    const cleanQuery = query || 'home';
+    // Create a safe key for the filename using base64 to handle special characters
+    const fileKey = base64UrlEncode(cleanQuery);
+    const key = `search/${fileKey}-p${page}`;
+
+    return getOrSet(key, () => _scrapeSearchVideos(query, page));
+});
+
+export const getVideoDetail = cache(async (id: string): Promise<VideoDetail | null> => {
+    return getOrSet(`video/${id}`, () => _scrapeVideoDetail(id));
 });

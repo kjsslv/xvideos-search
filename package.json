@@ -6,11 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "import:keywords": "node lib/keywords/import.js"
   },
   "dependencies": {
+    "better-sqlite3": "^12.5.0",
     "cheerio": "^1.1.2",
     "clsx": "^2.1.1",
+    "html-entities": "^2.6.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
     "react": "19.2.3",
@@ -19,6 +22,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -27,5 +31,9 @@
     "eslint-config-next": "16.1.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.1.0",
+    "utf-8-validate": "^6.0.6"
   }
 }

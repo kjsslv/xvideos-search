@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Search, Menu, X } from "lucide-react"; // Added Menu/X for potential future mobile menu
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { slugify } from "@/lib/utils";
+import { slugifySearchQuery } from "@/lib/utils";
 
 export default function Navbar() {
     const [query, setQuery] = useState("");
@@ -13,7 +13,7 @@ export default function Navbar() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         if (query.trim()) {
-            const slug = slugify(query);
+            const slug = slugifySearchQuery(query);
             router.push(`/s/${slug}.html`);
             setIsMobileSearchOpen(false);
         }

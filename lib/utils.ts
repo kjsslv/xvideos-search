@@ -31,3 +31,9 @@ export function slugify(text: string): string {
         .replace(/\s+/g, '-')
         .replace(/^-+|-+$/g, '');
 }
+
+export function slugifySearchQuery(text: string): string {
+    if (!text) return "";
+    return text.trim().toLowerCase()
+        .replace(/\s+/g, '-');
+}
