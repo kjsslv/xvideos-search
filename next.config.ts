@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
 
-  // serverExternalPackages: ['better-sqlite3'],
+  serverExternalPackages: ['better-sqlite3'],
   async headers() {
     return [
       {

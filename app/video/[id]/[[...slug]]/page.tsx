@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import VideoCard from "@/components/VideoCard";
 import VideoIframeWrapper from "@/components/VideoIframeWrapper";
+import ShareBar from "@/components/ShareBar";
 import { notFound, redirect } from "next/navigation";
 import { getVideoDetail } from "@/lib/scraper";
 import { slugify, slugifySearchQuery, base64UrlDecode } from "@/lib/utils";
@@ -69,6 +70,10 @@ export default async function VideoPage({ params }: Props) {
                         <span className="flex items-center gap-2">
                             <span className="font-semibold text-white">Duration:</span> {video.duration}
                         </span>
+                    </div>
+
+                    <div className="mt-4">
+                        <ShareBar />
                     </div>
 
                     {/* Tags */}

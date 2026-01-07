@@ -45,32 +45,43 @@ export async function getOrSet<T>(
             const ageMs = now - stats.mtimeMs;
             const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
-            if (ageMs > sevenDaysMs) {
-                // Proceed to fetch logic below by throwing
-                throw new Error("Cache expired");
-            }
-
             // Try reading the file
             const fileContent = await fs.readFile(filePath, 'utf-8');
             // If empty file, throw to trigger fetch
             if (!fileContent.trim()) throw new Error("Empty file");
 
             const data = JSON.parse(fileContent);
+
+            if (ageMs > sevenDaysMs) {
+                // Stale-While-Revalidate: Return stale data, update in background
+                fetcher().then(async (newData) => {
+                    if (newData !== null && newData !== undefined) {
+                        try {
+                            await fs.writeFile(filePath, JSON.stringify(newData, null, 2), 'utf-8');
+                        } catch (err) {
+                            console.error("Background cache update failed:", err);
+                        }
+                    }
+                }).catch(err => console.error("Background fetch failed:", err));
+
+                return data;
+            }
+
             return data;
         } catch (readError) {
-            // File doesn't exist, is empty, invalid JSON, or EXPIRED
-            // Proceed to fetch
+            // File doesn't exist, is empty, invalid JSON, or other FS error
+            // Proceed to fetch (synchronously)
         }
 
         const data = await fetcher();
 
         // Only save if data is not null/undefined
         if (data !== null && data !== undefined) {
+            await fs.mkdir(path.dirname(filePath), { recursive: true });
             await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
         }
 
         return data;
-
     } catch (error) {
         // Fallback: try to fetch without saving if file system fails, or rethrow
         return await fetcher();

@@ -35,5 +35,7 @@ export function slugify(text: string): string {
 export function slugifySearchQuery(text: string): string {
     if (!text) return "";
     return text.trim().toLowerCase()
+        // Remove special characters: [](),. etc. AND CJK punctuation (Fullwidth forms \uFF00-\uFFEF, CJK Symbols \u3000-\u303F)
+        .replace(/[\[\]().,;:'"!@#$%^&*<>?\/\\|`~：！\u3000-\u303F\uFF00-\uFFEF]/g, '')
         .replace(/\s+/g, '-');
 }

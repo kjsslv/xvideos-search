@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,10 @@ export default function RootLayout({
       >
         {children}
         <Footer />
+        <Script
+          src="https://platform-api.sharethis.com/js/sharethis.js#property=58f711b347f651001163c7d6&product=inline-share-buttons"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );

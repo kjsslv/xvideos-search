@@ -5,8 +5,8 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: '/',
-            disallow: ['/private/', '/admin/'],
+            disallow: ['/private/', '/admin/', '/dashboard/'],
         },
-        sitemap: 'https://phimsex.boo/sitemap.xml',
+        sitemap: 'https://pornse.org/sitemap/main.xml',
     };
 }
