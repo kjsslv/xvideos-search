@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  web:
+    container_name: xvideos_search
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      # Mount database file (create empty one on host if not exists)
+      - ./keywords.db:/app/keywords.db
+      # Mount data cache folder
+      - ./data:/app/data
